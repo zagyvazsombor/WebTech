@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git App - Felhasználó adatlap</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="user-profile">
+        <img id="avatar" src="" alt="Profilkép" width="150">
+        <h2 id="username"></h2>
+        <p id="bio"></p>
+        <p id="location"></p>
+        <p id="blog"></p>
+        <p><strong>Followers:</strong> <span id="followers"></span></p>
+        <p><strong>Public Repositories:</strong> <span id="public_repos"></span></p>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        async function loadUser(username) {
+            try {
+                const res = await fetch(`https://api.github.com/users/${username}`, {
+                    headers: {
+                        'Authorization': 'Bearer ' + GITHUB_ACCESS_TOKEN
+                    }
+                });
+
+                if (!res.ok) {
+                    throw 'Szerver hiba történt, státuszkód: ' + res.status;
+                }
+
+                const data = await res.json();
+                document.querySelector('#avatar').src = data.avatar_url;
+                document.querySelector('#username').textContent = data.name || data.login;
+                if (data.bio) document.querySelector('#bio').textContent = data.bio;
+                if (data.location) document.querySelector('#location').textContent = `📍 ${data.location}`;
+                if (data.blog) {
+                    document.querySelector('#blog').innerHTML = `<a href="${data.blog}" target="_blank">🔗 ${data.blog}</a>`;
+                }
+                document.querySelector('#followers').textContent = data.followers;
+                document.querySelector('#public_repos').textContent = data.public_repos;
+            } catch (err) {
+                alert(err);
+                console.error(err);
+            }
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const username = params.get('name');
+
+        if (!username) {
+            window.location = 'index.html';
+        } else {
+            loadUser(username);
+        }
+    </script>
+</body>
+</html> 
